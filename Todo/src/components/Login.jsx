@@ -1,10 +1,26 @@
-import React,{useState} from "react";import { Client, Account, ID } from "appwrite";
+import React,{useState,useEffect} from "react";import { Client, Account, ID } from "appwrite";
 import {Link} from 'react-router-dom'
+import { setUserData } from "../store/userSlice/userSlice";
+import { useDispatch,useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
 function Login(){
 
 const [email,setEmail] = useState("")
 const [password,setPassword] = useState("")
+const dispatch = useDispatch()
+const userData = useSelector((state)=>state.userData)
+const navigate = useNavigate()
+
+useEffect(()=>{
+    console.log(userData)
+},[userData])
+
+
+function clearFields(){
+    setEmail(null)
+    setPassword(null)
+}
 
 async function handleLogin(){
     try {
@@ -16,10 +32,20 @@ async function handleLogin(){
         const response = await account.createEmailPasswordSession(email,password)
         if(response){
             alert("Login Successfully")
+            dispatch(setUserData({
+                userId:response.userId,
+                appwriteUserId:response.$id,
+                createdAt:response.$createdAt,
+                updatedAt:response.$updatedAt
+            }))
+
+            navigate('/home')
         }
     } catch (error) {
         
     }
+
+    clearFields()
 }
 
 
@@ -33,13 +59,15 @@ return(
             <div className="w-[90%] h-[20%] text-white  ">
                 <label>Email</label><br />
                 <input type="text" placeholder="Email" className="bg-[#334155] w-full h-[60%] px-3 text-md mt-2  rounded-xl" 
+                value={email}
                 onChange={(e)=>setEmail(e.target.value)}
                 />
             </div>
             <div className="w-[90%] h-[20%] text-white ">
                 <label>Password</label><br />
-                <input type="text" placeholder="Password"
+                <input type="password" placeholder="Password"
                  className="bg-[#334155] w-full h-[60%] px-3 text-md mt-2  rounded-xl"
+                 value={password}
                  onChange={(e)=>setPassword(e.target.value)}
                  />
             </div>
@@ -47,7 +75,7 @@ return(
             onClick={handleLogin}
             >Login</button>
             <div className="text-center text-gray-400">
-                <p>New User? <span className="text-[#7C3AED]">Create account</span></p>
+                <p>Don't have account ? <Link to="/signup" className="text-[#7C3AED]">Create account</Link></p>
                 <p>Forgot password?</p>
             </div>
         </div>

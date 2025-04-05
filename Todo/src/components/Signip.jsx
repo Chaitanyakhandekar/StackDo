@@ -1,5 +1,7 @@
 import React,{useState} from "react";
 import {Client,ID,Account,Databases} from 'appwrite'
+import { Link } from "react-router";
+import toast from 'react-hot-toast';
 
 function Signup(){
     const [loading,setLoading] = useState(false)
@@ -21,6 +23,7 @@ function Signup(){
 
             const response = await account.create(ID.unique(),email,password)
             console.log(response)
+            toast.success('🎉 Signup Successful!');
 
             setEmail("")
             setFirstName("")
@@ -97,7 +100,7 @@ function Signup(){
     <div className="mt-6 text-center text-[#94A3B8]">
       <p>
         Already have an account? 
-        <a href="/login" className="text-[#7C3AED] hover:underline ml-1">Login</a>
+        <Link to="/login" className="text-[#7C3AED] hover:underline ml-1">Login</Link>
       </p>
     </div>
   </div>
