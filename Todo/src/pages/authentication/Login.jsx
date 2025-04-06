@@ -1,6 +1,6 @@
 import React,{useState,useEffect} from "react";import { Client, Account, ID } from "appwrite";
 import {Link} from 'react-router-dom'
-import { setUserData } from "../store/userSlice/userSlice";
+import { setUserData } from "../../store/userSlice/userSlice";
 import { useDispatch,useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
@@ -15,6 +15,14 @@ const navigate = useNavigate()
 useEffect(()=>{
     console.log(userData)
 },[userData])
+
+useEffect(()=>{
+    const client = new Client()
+    .setEndpoint('https://cloud.appwrite.io/v1')
+    .setProject('67efd413003a478100a0')
+    const account = new Account(client)
+    account.deleteSessions().then().catch() 
+},[])
 
 
 function clearFields(){
