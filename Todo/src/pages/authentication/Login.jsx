@@ -3,6 +3,7 @@ import {Link} from 'react-router-dom'
 import { setUserData } from "../../store/userSlice/userSlice";
 import { useDispatch,useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import {client,account} from '../../appwrite/config'
 
 function Login(){
 
@@ -16,14 +17,18 @@ useEffect(()=>{
     console.log(userData)
 },[userData])
 
-useEffect(()=>{
-    const client = new Client()
-    .setEndpoint('https://cloud.appwrite.io/v1')
-    .setProject('67efd413003a478100a0')
-    const account = new Account(client)
-    account.deleteSessions().then().catch() 
-},[])
+useEffect(() => {
+    const clearExistingSessions = async () => {
+        try {
+            await account.deleteSessions();
+            console.log("All sessions deleted (if any existed)");
+        } catch (error) {
+            console.warn("No session to delete or error deleting sessions:", error);
+        }
+    };
 
+    clearExistingSessions();
+}, []);
 
 function clearFields(){
     setEmail(null)
@@ -32,20 +37,24 @@ function clearFields(){
 
 async function handleLogin(){
     try {
-        const client = new Client()
-            .setEndpoint('https://cloud.appwrite.io/v1')
-            .setProject('67efd413003a478100a0')
-        
-        const account = new Account(client)
+       
         const response = await account.createEmailPasswordSession(email,password)
-        if(response){
+        const session = await account.get()
+        if(response && session){
+
+            localStorage.setItem('userId',response.userId)
+            localStorage.setItem('appwriteUserId',response.$id)
+            localStorage.setItem('createdAt',response.$createdAt)
+            localStorage.setItem('updatedAt',response.$updatedAt)
             alert("Login Successfully")
             dispatch(setUserData({
-                userId:response.userId,
-                appwriteUserId:response.$id,
-                createdAt:response.$createdAt,
-                updatedAt:response.$updatedAt
+                userId : response.userId,
+                appwriteUserId : response.appwriteUserId,
+                createdAt : response.createdAt,
+                updatedAt : response.updatedAt,
             }))
+
+            
 
             navigate('/home')
         }
@@ -58,7 +67,7 @@ async function handleLogin(){
 
 
 return(
-    <div className="bg-[#0F172A] w-[100vw] h-[100vh] flex justify-center items-center">
+    <div className="bg-[#0F172A] w-[100vw] h-[100vh] flex justify-center items-center font-urban">
         <div className="bg-[#1E293B] max-w-md w-full h-[60%] rounded-xl m-2 flex flex-col items-center justify-evenly  text-white">
             <div className="mb-2 mt-2">
                 <h1 className="text-3xl font-bold text-center mb-3">ByteCode Todo App</h1>

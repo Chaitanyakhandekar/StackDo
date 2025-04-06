@@ -10,6 +10,7 @@ function TodoItem({title="Hello",status=false}){
         <div className={` w-1/2 h-[10%]  rounded-md flex justify-around items-center ${isComplete?"bg-[#2C3A4D]":"bg-[#2ec5f341]"} `}>
             <button className={` ${isComplete?"border-green-400":"p-2"} border-2 border-gray-400 rounded-md`}
             onClick={()=>setIsComplete((stat)=>!stat)}
+            title="mark as complete"
             >
                 {/* TODO */}
                 {isComplete?<FiCheck className="text-green-500  font-bold rounded-md"/>:""}
@@ -24,12 +25,12 @@ function TodoItem({title="Hello",status=false}){
 
             <div className="flex justify-center gap-2 w-[6%]">
            {
-            edit && !isComplete &&  <FiEdit className="text-orange-400 hover:cursor-pointer text-2md" onClick={()=>{setEdit(false)}}/>
+            edit && !isComplete &&  <FiEdit title="Edit" className="text-orange-400 hover:cursor-pointer text-2md" onClick={()=>{setEdit(false)}}/>
            }
            {
             !edit && <FiDownload onClick={()=>setEdit(true)}/>
            }
-            <FiTrash2 className="text-red-600 hover:cursor-pointer "/>
+            <FiTrash2 className="text-red-600 hover:cursor-pointer " title="Delete todo"/>
             </div>
         </div>
     )

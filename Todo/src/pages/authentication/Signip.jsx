@@ -2,6 +2,7 @@ import React,{useState} from "react";
 import {Client,ID,Account,Databases} from 'appwrite'
 import { Link } from "react-router";
 import toast from 'react-hot-toast';
+import {client,account} from '../../appwrite/config'
 
 function Signup(){
     const [loading,setLoading] = useState(false)
@@ -15,12 +16,7 @@ function Signup(){
     async function handleSubmit(){
         setName(firstName+lastName)
         try {
-            const client = new Client()
-                .setEndpoint('https://cloud.appwrite.io/v1')
-                .setProject('67efd413003a478100a0')
-
-            const account = new Account(client) 
-
+          
             const response = await account.create(ID.unique(),email,password)
             console.log(response)
             toast.success('🎉 Signup Successful!');
@@ -37,7 +33,7 @@ function Signup(){
     }
     
     return(
-        <div className="min-h-screen bg-[#0F172A] flex items-center justify-center p-4">
+        <div className="min-h-screen bg-[#0F172A] flex items-center justify-center p-4 font-urban ">
   {/* Card Container */}
   <div className="w-full max-w-md bg-[#1E293B] rounded-xl p-8 shadow-lg border border-[#334155]">
     
