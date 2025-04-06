@@ -8,6 +8,7 @@ import {Client,Account,Databases,ID} from 'appwrite'
 import { client, account, databases} from '../../appwrite/config'
 import { setUserData } from "../../store/userSlice/userSlice";
 import { Query } from "appwrite";
+import Section from "../../components/Section";
 
 
 function Home() {
@@ -20,14 +21,20 @@ function Home() {
     const [addSection,setAddSection] = useState(false)
     const [sectionName,setSectionName] = useState("")
     const [activeSection,setActiveSection] = useState('All')
+    const [activeSectionId,setActiveSectionId] = useState('All')
     const [todos,setTodos] = useState([])
     const [backupTodos,setBackupTodos] = useState([])
     const [sectionTodods,setSectionTodos] = useState([])
     const [sections,setSections] = useState([])
+    const [title,setTitle] = useState("")
+    const [loading,setLoading] = useState(false)
+    const [userId1,setUserId1] = useState("")
+    
 
     const navigate = useNavigate()
 
-    async function fetchTodos(userId){   //! fetching sections
+    async function fetchSections(userId){   //! fetching sections
+        
         try {
             let response = await databases.listDocuments(
                 '67efd6330013881c7e66',
@@ -39,16 +46,31 @@ function Home() {
         } catch (error) {
             console.log(error)
         }
+        
+    }
+
+    async function fetchAllTodos(userId){
+        setLoading(true)
+        let response = await databases.listDocuments(
+            '67efd6330013881c7e66',
+            '67efd64b00020a82b9d1',
+            [Query.equal("userId",userId)]
+        )
+        console.log('All todos = ',response)
+        setTodos(response.documents)
+        setLoading(false)
     }
 
     useEffect(() => {
         const userId = localStorage.getItem('userId');
+        setUserId1(userId)
         const appwriteUserId = localStorage.getItem('appwriteUserId');
         const createdAt = localStorage.getItem('createdAt');
         const updatedAt = localStorage.getItem('updatedAt');
     
         if (userId && appwriteUserId) {
-            fetchTodos(userId).then().catch((error)=>console.log(error))
+            fetchSections(userId).then().catch((error)=>console.log(error))
+            
           dispatch(
             setUserData({
               userId,
@@ -58,6 +80,7 @@ function Home() {
             })
           );
         }
+        fetchAllTodos(userId)
         
       }, []);
 
@@ -65,6 +88,8 @@ function Home() {
         
         console.log('after reftesh : ',userData)
       }, [userData]);
+
+    
 
     function handleB1(e) {
         setB1(true)
@@ -114,9 +139,27 @@ function Home() {
             }
         )
         console.log(response)
-        fetchTodos(userData.userId).then()
+        fetchSections(userData.userId).then()
         setAddSection(false)
     }
+
+    async function addTodo(){
+        let response = await databases.createDocument(
+            '67efd6330013881c7e66',
+            '67efd64b00020a82b9d1',
+            ID.unique(),
+            {
+                title,
+                sectionId:activeSection==='All'?"All":activeSectionId,
+                userId:userData.userId,
+                isComplete:false
+            }   
+        )
+        if(response){
+            alert('todo added successfully')
+            setTitle("")
+        }
+    }   
 
 
     return (
@@ -131,20 +174,18 @@ function Home() {
             <div className=" w-full h-[10%] flex flex-col justify-center items-center p-3">
 
                 <div className=" w-full sections overflow-y-auto flex justify-center">
-                    <button className={`bg-[#1E293B] px-4 py-3 ml-4 ${b1 ? "bg-[#6D28D9]" : "bg-[#1E293B]"} rounded-xl`}
-                        onClick={handleB1}
+                    <button className={`bg-[#1E293B] px-4 py-3 ml-4 ${activeSection==='All' ? "bg-[#6D28D9]" : "bg-[#1E293B]"} rounded-xl`}
+                        onClick={()=>{fetchAllTodos(userId1),setActiveSection('All')}}
                     >All</button>
 
                     {
                         sections.map((section)=>(
-                            <button key={section.$id} className={`bg-[#1E293B] px-4 py-3 ml-4 ${b1 ? "bg-[#6D28D9]" : "bg-[#1E293B]"} rounded-xl`}
-                            onClick={{}}
-                        >{section.name}</button>
+                            <Section id={section.$id} name={section.name} activeSection={activeSection} setActiveSection={setActiveSection} setTodos={setTodos} setActiveSectionId={setActiveSectionId} activeSectionId={activeSectionId} loading={loading} setLoading={setLoading}/>
                         ))
                     }
                     
-                    <button className={`bg-[#1E293B] px-4 py-3 ml-4 border-2 border-gray-800  rounded-xl`}
-                        onClick={()=>setAddSection(true)}
+                    <button className={` px-4 py-3 ml-4 border-2 border-gray-800  rounded-xl ${activeSection==='All'?"bg-[#7C3AED] text-white":"bg-[#1E293B] hover:bg-[#334155]"}`}
+                        onClick={()=>{setAddSection(true),setActiveSection('Add'),setActiveSectionId('All')}}
                         title="Add section"
                     ><FiPlus /></button>
                 </div>
@@ -152,9 +193,14 @@ function Home() {
                 <div className="w-full  flex justify-center gap-3 items-center p-3">
                     <input type="text" placeholder="Add a new task..."
                         className="search-bar w-[40%] p-4 rounded-md  bg-[#1E293B] focus:outline-none focus:ring-1 focus:ring-[#7C3AED]"
+                        value={title}
+                        onChange={(e)=>setTitle(e.target.value)}
                     />
 
-                    <button className="bg-[#7C3AED] hover:bg-[#6D28D9] p-4 rounded-md font-bold text-center" title="Add todo">
+                    <button className="bg-[#7C3AED] hover:bg-[#6D28D9] p-4 rounded-md font-bold text-center"
+                     title="Add todo"
+                     onClick={addTodo}
+                     >
                         + Add
                     </button>
                 </div>
@@ -195,7 +241,19 @@ function Home() {
             </div>
             }
             <div className=" h-[75vh] w-full flex  flex-col items-center overflow-auto ">
-                <TodoItem />
+                {
+                    todos && !loading &&
+                    todos.map((todo)=>(
+                        <TodoItem key={todo.$id} title={todo.title} status={todo.isComplete} sectionId={todo.sectionId} id={todo.$id}/>
+                    ))
+                    
+                }
+                {
+                    loading &&  <h1 className="text-gray-400 font-bold">Loading...</h1>
+                }
+                {
+                    todos.length===0 && !loading && <h1 className="text-gray-400 font-bold">No todos created in this section....</h1>
+                }
             </div>
         </div>
     )
