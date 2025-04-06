@@ -61,6 +61,22 @@ function Home() {
         setLoading(false)
     }
 
+    async function fetchSectionTodos(){
+            setLoading(true)
+            try {
+                let response = await databases.listDocuments(
+                    '67efd6330013881c7e66',
+                    '67efd64b00020a82b9d1',
+                    [Query.equal('sectionId',activeSectionId)]
+                )
+                console.log('todos',response)
+                setTodos(response.documents)
+            } catch (error) {
+                
+            }
+            setLoading(false)
+        }
+
     useEffect(() => {
         const userId = localStorage.getItem('userId');
         setUserId1(userId)
@@ -157,6 +173,7 @@ function Home() {
         )
         if(response){
             alert('todo added successfully')
+            fetchSectionTodos()
             setTitle("")
         }
     }   
