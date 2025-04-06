@@ -4,6 +4,7 @@ import { setUserData } from "../../store/userSlice/userSlice";
 import { useDispatch,useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import {client,account} from '../../appwrite/config'
+import Swal from 'sweetalert2';
 
 function Login(){
 
@@ -20,10 +21,16 @@ useEffect(()=>{
 useEffect(() => {
     const clearExistingSessions = async () => {
         try {
-            await account.deleteSessions();
-            console.log("All sessions deleted (if any existed)");
+            // Check if a user is currently logged in
+            await account.get(); // This will throw an error if no user is logged in
+            await account.deleteSession('current');
+            console.log("Session deleted.");
         } catch (error) {
-            console.warn("No session to delete or error deleting sessions:", error);
+            if (error.code === 401) {
+                console.log("No active session to delete.");
+            } else {
+                console.warn("Error handling session:", error);
+            }
         }
     };
 
@@ -46,7 +53,18 @@ async function handleLogin(){
             localStorage.setItem('appwriteUserId',response.$id)
             localStorage.setItem('createdAt',response.$createdAt)
             localStorage.setItem('updatedAt',response.$updatedAt)
-            alert("Login Successfully")
+            
+            Swal.fire({
+                title: 'Login Successful!',
+                text: `Welcome back!`,
+                icon: 'success',
+                confirmButtonText: 'Continue',
+                timer: 2000,
+                showConfirmButton: false,
+                position: 'top-end',
+                toast: true
+            });
+
             dispatch(setUserData({
                 userId : response.userId,
                 appwriteUserId : response.appwriteUserId,
@@ -59,7 +77,12 @@ async function handleLogin(){
             navigate('/home')
         }
     } catch (error) {
-        
+        Swal.fire({
+            title: 'Login Failed!',
+            text: error.message || 'Invalid email or password',
+            icon: 'error',
+            confirmButtonText: 'Try Again'
+        });
     }
 
     clearFields()

@@ -3,6 +3,8 @@ import {Client,ID,Account,Databases} from 'appwrite'
 import { Link } from "react-router";
 import toast from 'react-hot-toast';
 import {client,account} from '../../appwrite/config'
+import { useNavigate } from "react-router";
+import Swal from 'sweetalert2';
 
 function Signup(){
     const [loading,setLoading] = useState(false)
@@ -12,19 +14,35 @@ function Signup(){
     const [email,setEmail] = useState("")
     const [password,setPassword] = useState("")
 
+    const navigate = useNavigate()
 
     async function handleSubmit(){
         setName(firstName+lastName)
         try {
           
-            const response = await account.create(ID.unique(),email,password)
+            const response = await account.create(ID.unique(),email,password,firstName+lastName)
             console.log(response)
-            toast.success('🎉 Signup Successful!');
+            
 
             setEmail("")
             setFirstName("")
             setLastName("")
             setPassword("")
+
+            Swal.fire({
+              title: 'Account Created! 🎉',
+              text: 'Your account has been successfully created. Please log in to continue.',
+              icon: 'success',
+              confirmButtonText: 'Proceed to Login',
+              timer: 2500,
+              showConfirmButton: true,
+              position: 'center',
+              background: '#f0f9ff',
+              color: '#0f172a',
+              iconColor: '#10b981'
+          });
+          
+            navigate('/login')
 
             
         } catch (error) {
