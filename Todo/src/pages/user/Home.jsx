@@ -140,6 +140,19 @@ function Home() {
     async function logout() {
         try {
             await account.deleteSession('current'); // This deletes the current active session
+            setUserId1('')
+            localStorage.removeItem('userId');
+        localStorage.removeItem('appwriteUserId');
+        localStorage.removeItem('createdAt');
+        localStorage.removeItem('updatedAt');
+
+        dispatch(setUserData({
+            userId: null,
+            appwriteUserId: null,
+            createdAt: null,
+            updatedAt: null,
+        }));
+            
             Swal.fire({
                             title: 'Logout Successful!',
                             text: `Loging out..!`,
@@ -202,6 +215,17 @@ function Home() {
         }
     }
 
+    if(!userId1){
+        return(
+           <>
+            <h1>Please login to view todos....</h1>
+            {navigate('/login')}
+           </>
+        )
+    }
+    else{
+        console.log('user Id 1 = ',userId1)
+    }
     return (
         <div className="w-full min-h-screen bg-[#0F172A] text-[#F8FAFC] font-urban">
             <nav className="bg-[#1E293B] p-3 flex justify-between items-center">
