@@ -66,16 +66,14 @@ function Home() {
     async function fetchAllTodos(userId) {
         setLoading(true);
         try {
+            let queries = [Query.equal("userId", userId)]
+            if(activeSection!=='All'){
+                queries.push(Query.equal("sectionId", activeSectionId))
+            }
             let response = await databases.listDocuments(
                 '67efd6330013881c7e66',
                 '67efd64b00020a82b9d1',
-                activeSection==='All'?[
-                    Query.equal("userId", userId), // Critical - must filter by user
-                    
-                ]:[
-                    Query.equal("userId", userId), // Critical - must filter by user
-                    Query.equal("sectionId", activeSectionId) // If applicable
-                ]
+               queries
             );
             setTodos(response.documents);
         } catch (error) {
