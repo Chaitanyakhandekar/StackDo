@@ -304,7 +304,7 @@ function Home() {
                         <button
                             className={`bg-[#1E293B] px-3 py-2 mx-1 sm:px-4 sm:py-3 sm:ml-4 ${activeSection === 'All' ? "bg-[#6D28D9]" : "bg-[#1E293B]"
                                 } rounded-xl text-sm sm:text-base`}
-                            onClick={() => { fetchAllTodos(userId1), setActiveSection('All') }}
+                            onClick={() => {setActiveSection('All'), fetchAllTodos(userId1) }}
                         >
                             All
                         </button>
