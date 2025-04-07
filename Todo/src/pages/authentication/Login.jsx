@@ -12,6 +12,7 @@ const [email,setEmail] = useState("")
 const [password,setPassword] = useState("")
 const dispatch = useDispatch()
 const userData = useSelector((state)=>state.userData)
+const [loading,setLoading] = useState(false)
 const navigate = useNavigate()
 
 useEffect(()=>{
@@ -43,6 +44,7 @@ function clearFields(){
 }
 
 async function handleLogin(){
+    setLoading(true)
     try {
        
         const response = await account.createEmailPasswordSession(email,password)
@@ -72,7 +74,7 @@ async function handleLogin(){
                 updatedAt : response.updatedAt,
             }))
 
-            
+            setLoading(false)
 
             navigate('/home')
         }
@@ -113,7 +115,8 @@ return(
             </div>
             <button className="bg-[#7C3AED] hover:bg-[#6D28D9] mt-2 text-white text-xl font-bold w-[90%] h-[10%] rounded-xl"
             onClick={handleLogin}
-            >Login</button>
+            disabled={loading}
+            >{loading?"Logging...":"Login"}</button>
             <div className="text-center text-gray-400">
                 <p>Don't have account ? <Link to="/signup" className="text-[#7C3AED]">Create account</Link></p>
                 <p>Forgot password?</p>

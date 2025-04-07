@@ -17,7 +17,9 @@ function Signup(){
     const navigate = useNavigate()
 
     async function handleSubmit(){
+
         setName(firstName+lastName)
+        setLoading(true)
         try {
           
             const response = await account.create(ID.unique(),email,password,firstName+lastName)
@@ -41,7 +43,7 @@ function Signup(){
               color: '#0f172a',
               iconColor: '#10b981'
           });
-          
+          setLoading(false)
             navigate('/login')
 
             
@@ -105,8 +107,9 @@ function Signup(){
        
         className="w-full bg-[#7C3AED] hover:bg-[#6D28D9] text-white py-3 px-4 rounded-lg mt-4 transition-colors"
         onClick={handleSubmit}
+        disabled={loading}
       >
-        Create Account
+        {loading?"Creating...":"Create Account"}
       </button>
     </div>
 

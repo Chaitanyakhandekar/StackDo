@@ -69,7 +69,10 @@ function Home() {
             let response = await databases.listDocuments(
                 '67efd6330013881c7e66',
                 '67efd64b00020a82b9d1',
-                [
+                activeSection==='All'?[
+                    Query.equal("userId", userId), // Critical - must filter by user
+                    
+                ]:[
                     Query.equal("userId", userId), // Critical - must filter by user
                     Query.equal("sectionId", activeSectionId) // If applicable
                 ]
@@ -229,7 +232,7 @@ function Home() {
             }
         )
         if (response) {
-            alert('todo added successfully')
+            // alert('todo added successfully')
             fetchSectionTodos()
             setTitle("")
         }
