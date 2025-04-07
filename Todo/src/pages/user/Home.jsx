@@ -29,6 +29,19 @@ function Home() {
     const [title, setTitle] = useState("")
     const [loading, setLoading] = useState(false)
     const [userId1, setUserId1] = useState("")
+    const [authVerified, setAuthVerified] = useState(false);
+
+    useEffect(() => {
+        const verifyAuth = async () => {
+            try {
+                await account.get(); // Verify current session
+                setAuthVerified(true);
+            } catch (error) {
+                navigate('/login');
+            }
+        };
+        verifyAuth();
+    }, []);
 
 
     const navigate = useNavigate()
@@ -50,15 +63,21 @@ function Home() {
     }
 
     async function fetchAllTodos(userId) {
-        setLoading(true)
-        let response = await databases.listDocuments(
-            '67efd6330013881c7e66',
-            '67efd64b00020a82b9d1',
-            [Query.equal("userId", userId)]
-        )
-        console.log('All todos = ', response)
-        setTodos(response.documents)
-        setLoading(false)
+        setLoading(true);
+        try {
+            let response = await databases.listDocuments(
+                '67efd6330013881c7e66',
+                '67efd64b00020a82b9d1',
+                [
+                    Query.equal("userId", userId), // Critical - must filter by user
+                    Query.equal("sectionId", activeSectionId) // If applicable
+                ]
+            );
+            setTodos(response.documents);
+        } catch (error) {
+            console.error("Fetch error:", error);
+        }
+        setLoading(false);
     }
 
     async function fetchSectionTodos() {
@@ -142,27 +161,27 @@ function Home() {
             await account.deleteSession('current'); // This deletes the current active session
             setUserId1('')
             localStorage.removeItem('userId');
-        localStorage.removeItem('appwriteUserId');
-        localStorage.removeItem('createdAt');
-        localStorage.removeItem('updatedAt');
+            localStorage.removeItem('appwriteUserId');
+            localStorage.removeItem('createdAt');
+            localStorage.removeItem('updatedAt');
 
-        dispatch(setUserData({
-            userId: null,
-            appwriteUserId: null,
-            createdAt: null,
-            updatedAt: null,
-        }));
-            
+            dispatch(setUserData({
+                userId: null,
+                appwriteUserId: null,
+                createdAt: null,
+                updatedAt: null,
+            }));
+
             Swal.fire({
-                            title: 'Logout Successful!',
-                            text: `Loging out..!`,
-                            icon: 'success',
-                            confirmButtonText: 'Continue',
-                            timer: 2000,
-                            showConfirmButton: false,
-                            position: 'top-end',
-                            toast: true
-                        });
+                title: 'Logout Successful!',
+                text: `Loging out..!`,
+                icon: 'success',
+                confirmButtonText: 'Continue',
+                timer: 2000,
+                showConfirmButton: false,
+                position: 'top-end',
+                toast: true
+            });
             navigate('/login')
         } catch (error) {
             console.error('Logout failed:', error);
@@ -176,7 +195,7 @@ function Home() {
                 position: 'top-end',
                 toast: true
             });
-            
+
         }
     }
 
@@ -215,30 +234,34 @@ function Home() {
         }
     }
 
-    if(!userId1){
-        return(
-           <>
-            <h1>Please login to view todos....</h1>
-            {navigate('/login')}
-           </>
+    if (!authVerified) {
+        return <div>Verifying authentication...</div>;
+    }
+
+    if (!userId1) {
+        return (
+            <>
+                <h1>Please login to view todos....</h1>
+                {navigate('/login')}
+            </>
         )
     }
-    else{
-        console.log('user Id 1 = ',userId1)
+    else {
+        console.log('user Id 1 = ', userId1)
     }
     return (
         <div className="w-full min-h-screen bg-[#0F172A] text-[#F8FAFC] font-urban">
             <nav className="bg-[#1E293B] p-3 flex justify-between items-center">
                 <h1 className="text-xl sm:text-2xl font-bold">ByteTodo</h1>
                 {!userId1 ? (
-                    <button 
+                    <button
                         className="flex items-center bg-[#7C3AED] hover:bg-[#6D28D9] px-3 py-2 sm:px-5 sm:py-3 rounded-md text-sm sm:text-base"
                         onClick={handleLogin}
                     >
                         Login
                     </button>
                 ) : (
-                    <button 
+                    <button
                         className="flex items-center bg-[#7C3AED] hover:bg-[#6D28D9] px-3 py-2 sm:px-5 sm:py-3 rounded-md text-sm sm:text-base"
                         onClick={logout}
                     >
@@ -251,31 +274,30 @@ function Home() {
                 {/* Sections */}
                 <div className="w-full sections overflow-x-auto whitespace-nowrap py-3 px-1">
                     <div className="inline-flex">
-                        <button 
-                            className={`bg-[#1E293B] px-3 py-2 mx-1 sm:px-4 sm:py-3 sm:ml-4 ${
-                                activeSection === 'All' ? "bg-[#6D28D9]" : "bg-[#1E293B]"
-                            } rounded-xl text-sm sm:text-base`}
+                        <button
+                            className={`bg-[#1E293B] px-3 py-2 mx-1 sm:px-4 sm:py-3 sm:ml-4 ${activeSection === 'All' ? "bg-[#6D28D9]" : "bg-[#1E293B]"
+                                } rounded-xl text-sm sm:text-base`}
                             onClick={() => { fetchAllTodos(userId1), setActiveSection('All') }}
                         >
                             All
                         </button>
 
                         {sections.map((section) => (
-                            <Section 
+                            <Section
                                 key={section.$id}
-                                id={section.$id} 
-                                name={section.name} 
-                                activeSection={activeSection} 
-                                setActiveSection={setActiveSection} 
-                                setTodos={setTodos} 
-                                setActiveSectionId={setActiveSectionId} 
-                                activeSectionId={activeSectionId} 
-                                loading={loading} 
+                                id={section.$id}
+                                name={section.name}
+                                activeSection={activeSection}
+                                setActiveSection={setActiveSection}
+                                setTodos={setTodos}
+                                setActiveSectionId={setActiveSectionId}
+                                activeSectionId={activeSectionId}
+                                loading={loading}
                                 setLoading={setLoading}
                             />
                         ))}
-                        
-                        <button 
+
+                        <button
                             className="px-3 py-2 mx-1 sm:px-4 sm:py-3 sm:ml-4 border-2 border-gray-800 rounded-xl 
                                bg-[#1E293B] hover:bg-[#334155] text-sm sm:text-base"
                             onClick={() => { setAddSection(true) }}
@@ -288,15 +310,15 @@ function Home() {
 
                 {/* Add Todo Input */}
                 <div className="w-full flex flex-col sm:flex-row justify-center gap-2 sm:gap-3 items-center p-2 sm:p-3 mt-2">
-                    <input 
-                        type="text" 
+                    <input
+                        type="text"
                         placeholder="Add a new task..."
                         className="search-bar w-full sm:w-[40%] p-3 sm:p-4 rounded-md bg-[#1E293B] focus:outline-none focus:ring-1 focus:ring-[#7C3AED] h-12"
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
                     />
 
-                    <button 
+                    <button
                         className="bg-[#7C3AED] hover:bg-[#6D28D9] p-3 sm:p-4 rounded-md font-bold text-center w-full sm:w-auto h-12"
                         title="Add todo"
                         onClick={addTodo}
@@ -310,8 +332,8 @@ function Home() {
             {addSection && (
                 <div className="fixed bg-black/20 inset-0 backdrop-blur-md flex justify-center items-center z-50">
                     <div className="relative w-11/12 sm:w-80 p-4 sm:p-5 rounded-2xl shadow-lg bg-[#1E293B]/90 border-2 border-[#334155]">
-                        <button 
-                            className="absolute top-3 right-3 text-gray-300 hover:text-white" 
+                        <button
+                            className="absolute top-3 right-3 text-gray-300 hover:text-white"
                             onClick={() => setAddSection(false)}
                         >
                             <FiX size={20} />
@@ -331,7 +353,7 @@ function Home() {
                             className="w-full p-2 rounded-md border border-gray-300 focus:outline-none bg-[#0F172A] text-white focus:ring-2 focus:ring-blue-400 mb-4"
                         />
 
-                        <button 
+                        <button
                             className="w-full py-2 bg-[#7C3AED] text-white rounded-md hover:bg-[#6D28D9] transition-colors"
                             onClick={createSection}
                         >
@@ -346,14 +368,16 @@ function Home() {
                 <div className="w-full flex flex-col items-center gap-3">
                     {todos && !loading && (
                         todos.map((todo) => (
-                            <TodoItem 
-                                key={todo.$id} 
-                                title={todo.title} 
-                                status={todo.isComplete} 
-                                sectionId={todo.sectionId} 
-                                id={todo.$id} 
-                                fetchSectionTodos={fetchSectionTodos}
-                            />
+                            todo.userId === userId1 && (
+                                <TodoItem
+                                    key={todo.$id}
+                                    title={todo.title}
+                                    status={todo.isComplete}
+                                    sectionId={todo.sectionId}
+                                    id={todo.$id}
+                                    fetchSectionTodos={fetchSectionTodos}
+                                />
+                            )
                         ))
                     )}
                     {loading && <h1 className="text-gray-400 font-bold py-4">Loading...</h1>}
