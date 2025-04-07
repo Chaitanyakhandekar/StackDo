@@ -67,9 +67,6 @@ function Home() {
         setLoading(true);
         try {
             let queries = [Query.equal("userId", userId)]
-            if(activeSection!=='All'){
-                queries.push(Query.equal("sectionId", activeSectionId))
-            }
             let response = await databases.listDocuments(
                 '67efd6330013881c7e66',
                 '67efd64b00020a82b9d1',
@@ -88,7 +85,9 @@ function Home() {
             let response = await databases.listDocuments(
                 '67efd6330013881c7e66',
                 '67efd64b00020a82b9d1',
-                [Query.equal('sectionId', activeSectionId)]
+                [Query.equal('sectionId', activeSectionId)
+                ]
+                
             )
             console.log('todos', response)
             setTodos(response.documents)
