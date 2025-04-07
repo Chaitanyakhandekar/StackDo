@@ -10,6 +10,7 @@ import { setUserData } from "../../store/userSlice/userSlice";
 import { Query } from "appwrite";
 import Section from "../../components/Section";
 import Swal from 'sweetalert2';
+import './animation.css'
 
 function Home() {
     let userData = useSelector((state) => state.userData)
@@ -235,8 +236,33 @@ function Home() {
     }
 
     if (!authVerified) {
-        return <div>Verifying authentication...</div>;
-    }
+        return (
+          <div className="w-full min-h-screen bg-[#0F172A] flex flex-col items-center justify-center">
+            <div className="flex flex-col items-center space-y-4">
+              {/* Animated spinner */}
+              <div className="relative">
+                <div className="w-16 h-16 border-4 border-[#7C3AED] border-opacity-30 rounded-full"></div>
+                <div className="absolute top-0 left-0 w-16 h-16 border-4 border-t-[#7C3AED] border-opacity-80 rounded-full animate-spin"></div>
+              </div>
+              
+              {/* Text with animation */}
+              <div className="text-center space-y-2">
+                <h2 className="text-2xl font-bold text-[#F8FAFC] animate-pulse">
+                  Securing Your Workspace
+                </h2>
+                <p className="text-[#94A3B8]">
+                  Just a moment while we verify your session...
+                </p>
+              </div>
+              
+              {/* Optional progress bar */}
+              <div className="w-48 bg-[#334155] rounded-full h-1.5">
+                <div className="bg-[#7C3AED] h-1.5 rounded-full animate-progress"></div>
+              </div>
+            </div>
+          </div>
+        );
+      }
 
     if (!userId1) {
         return (
