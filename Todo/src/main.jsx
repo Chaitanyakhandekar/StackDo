@@ -5,7 +5,7 @@ import App from './App.jsx'
 import { Provider } from 'react-redux'
 import { store } from './store/store.js'
 import { BrowserRouter } from 'react-router'
-import { register } from '../public/serviceWorkerRegistration.js'  // 🆕 Import this
+
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -17,5 +17,4 @@ createRoot(document.getElementById('root')).render(
   </StrictMode>
 )
 
-// Register the service worker here
-register()
+
