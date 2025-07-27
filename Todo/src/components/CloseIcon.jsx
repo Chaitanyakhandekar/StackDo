@@ -1,28 +1,50 @@
-import React from "react";
+import React, { useState } from "react";
+import { FiX, FiTrash2, FiLoader } from 'react-icons/fi';
 
-function CloseIcon({ position , onClick,activeSection,name}) {
+function CloseIcon({ position, onClick, activeSection, name, isDeleting }) {
+    const [isHovered, setIsHovered] = useState(false);
+
     return (
-       <>
-            {activeSection===name  &&
-                 <svg 
-                 xmlns="http://www.w3.org/2000/svg" 
-                 fill="none" 
-                 viewBox="0 0 24 24" 
-                 strokeWidth={2} 
-                 stroke="currentColor" 
-                 onClick={onClick}
-                 className={`size-5 bg-red-500 hover:bg-red-600 rounded-full absolute top-[-10%] right-[-5%] p-1 text-white font-bold cursor-pointer transition-colors duration-200 shadow-md hover:shadow-lg`}
-             >
-                 <path 
-                     strokeLinecap="round" 
-                     strokeLinejoin="round" 
-                     d="M6 18L18 6M6 6l12 12" 
-                 />
-             </svg>
+        <>
+            {activeSection === name && (
+                <button
+                    onClick={onClick}
+                    onMouseEnter={() => setIsHovered(true)}
+                    onMouseLeave={() => setIsHovered(false)}
+                    disabled={isDeleting}
+                    className={`absolute -top-2 -right-2 z-20 w-7 h-7 rounded-full transition-all duration-300 cursor-pointer flex items-center justify-center ${
+                        isDeleting 
+                            ? "bg-gray-500 cursor-not-allowed" 
+                            : "bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 hover:scale-110 active:scale-95"
+                    } border-2 border-red-400 shadow-lg hover:shadow-red-500/50`}
+                    title={isDeleting ? "Terminating module..." : `Terminate ${name} module`}
+                >
+                    {/* Background glow effect */}
+                    <div className={`absolute -inset-1 bg-gradient-to-r from-red-500 to-red-600 rounded-full blur opacity-0 transition-opacity duration-300 ${
+                        isHovered && !isDeleting ? "opacity-50" : ""
+                    }`}></div>
+                    
+                    {/* Icon */}
+                    <div className="relative z-10">
+                        {isDeleting ? (
+                            <FiLoader className="w-4 h-4 text-white animate-spin" />
+                        ) : isHovered ? (
+                            <FiTrash2 className="w-3.5 h-3.5 text-white" />
+                        ) : (
+                            <FiX className="w-4 h-4 text-white font-bold" />
+                        )}
+                    </div>
 
-}
-            <h1></h1>
-       </>
+                    {/* Pulse animation for active state */}
+                    {!isDeleting && (
+                        <div className="absolute inset-0 rounded-full bg-red-500 animate-ping opacity-20"></div>
+                    )}
+
+                    {/* Inner highlight */}
+                    <div className="absolute inset-0.5 rounded-full bg-gradient-to-t from-transparent to-white/20"></div>
+                </button>
+            )}
+        </>
     )
 }
 
