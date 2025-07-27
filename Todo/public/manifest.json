@@ -3,12 +3,12 @@
   "name": "My Awesome React App",
   "icons": [
     {
-      "src": "/stackDo.icon-192x192.png",
+      "src": "/stackDo.png",
       "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "/stackDo.icon-512x512.png",
+      "src": "/stackDo.png",
       "type": "image/png",
       "sizes": "512x512"
     }
