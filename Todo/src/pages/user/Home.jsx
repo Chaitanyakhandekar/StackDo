@@ -491,8 +491,8 @@ function Home() {
                         </div>
                     </div>
                     
-                    <div className="max-h-[60vh] overflow-y-auto">
-                        <div className="p-6 space-y-3">
+                    <div className="max-h-[60vh] overflow-y-auto w-full">
+                        <div className="p-1 space-y-3">
                             {todos && !loading && (
                                 todos.map((todo) => (
                                     todo.userId === userId1 && (

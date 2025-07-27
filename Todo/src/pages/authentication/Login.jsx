@@ -49,7 +49,7 @@ function Login() {
         try {
             // Simulate API call for demo
             setTimeout(() => {
-                alert('Login functionality would work with your Appwrite setup!');
+                // alert('Login functionality would work with your Appwrite setup!');
                 setLoading(false);
                 clearFields();
             }, 2000);

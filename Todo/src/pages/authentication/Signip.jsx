@@ -1,10 +1,10 @@
 import React, { useState } from "react";
-// import { Client, ID, Account, Databases } from 'appwrite';
-// import { Link } from "react-router";
-// import toast from 'react-hot-toast';
-// import { client, account } from '../../appwrite/config';
-// import { useNavigate } from "react-router";
-// import Swal from 'sweetalert2';
+import { Client, ID, Account, Databases } from 'appwrite';
+import { Link } from "react-router";
+import toast from 'react-hot-toast';
+import { client, account } from '../../appwrite/config';
+import { useNavigate } from "react-router";
+import Swal from 'sweetalert2';
 import { Code, Terminal, Lock, Mail, ArrowRight, Github, Zap, User, UserPlus, Shield, Check } from 'lucide-react';
 
 function Signup() {
@@ -21,7 +21,7 @@ function Signup() {
     const [emailFocused, setEmailFocused] = useState(false);
     const [passwordFocused, setPasswordFocused] = useState(false);
 
-    // const navigate = useNavigate();
+    const navigate = useNavigate();
 
     // Password strength indicator
     const getPasswordStrength = () => {
@@ -39,7 +39,7 @@ function Signup() {
         try {
             // Simulate API call for demo
             setTimeout(() => {
-                alert('Account created successfully! This would work with your Appwrite setup.');
+                
                 setLoading(false);
                 setEmail("");
                 setFirstName("");
@@ -48,7 +48,7 @@ function Signup() {
             }, 2000);
 
             // Your original code (commented out for demo):
-            /*
+            
             const response = await account.create(ID.unique(), email, password, firstName + lastName);
             console.log(response);
 
@@ -71,7 +71,7 @@ function Signup() {
             });
             setLoading(false);
             navigate('/login');
-            */
+            
         } catch (error) {
             alert('Signup failed: ' + (error.message || 'Please try again'));
             setLoading(false);
