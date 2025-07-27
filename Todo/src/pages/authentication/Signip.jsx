@@ -23,7 +23,7 @@ function Signup() {
 
     const navigate = useNavigate();
 
-    // Password strength indicator
+    
     const getPasswordStrength = () => {
         if (password.length === 0) return { strength: 0, text: '' };
         if (password.length < 6) return { strength: 1, text: 'Weak', color: 'bg-red-500' };
@@ -37,7 +37,7 @@ function Signup() {
         setName(firstName + lastName);
         setLoading(true);
         try {
-            // Simulate API call for demo
+           
             setTimeout(() => {
                 
                 setLoading(false);
@@ -47,7 +47,7 @@ function Signup() {
                 setPassword("");
             }, 2000);
 
-            // Your original code (commented out for demo):
+           
             
             const response = await account.create(ID.unique(), email, password, firstName + lastName);
             console.log(response);
@@ -92,21 +92,7 @@ function Signup() {
 
             {/* Main content */}
             <div className="relative z-10 w-full max-w-lg">
-                {/* Logo/Brand section */}
-                {/* <div className="text-center mb-8">
-                    <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl mb-4 shadow-2xl">
-                        <Terminal className="w-8 h-8 text-white" />
-                    </div>
-                    <h1 className="text-4xl font-bold bg-gradient-to-r from-white via-purple-200 to-blue-200 bg-clip-text text-transparent mb-2">
-                        ByteCode
-                    </h1>
-                    <p className="text-slate-400 text-lg">Developer's Task Manager</p>
-                    <div className="flex items-center justify-center gap-2 mt-2 text-sm text-slate-500">
-                        <UserPlus className="w-4 h-4" />
-                        <span>Join • Create • Build</span>
-                        <Zap className="w-4 h-4" />
-                    </div>
-                </div> */}
+                
 
                 {/* Signup form */}
                 <div className="bg-slate-800/50 backdrop-blur-xl border border-slate-700/50 rounded-3xl p-8 shadow-2xl">
@@ -329,21 +315,7 @@ function Signup() {
                     </div>
                 </div>
 
-                {/* Bottom brand elements */}
-                {/* <div className="text-center mt-8 space-y-2">
-                    <div className="flex items-center justify-center gap-4 text-slate-500 text-sm">
-                        <span>Join 10k+ developers</span>
-                        <div className="w-1 h-1 bg-slate-500 rounded-full"></div>
-                        <span>Free forever</span>
-                    </div>
-                    <div className="flex items-center justify-center gap-2 text-xs text-slate-600">
-                        <span>© 2024 ByteCode</span>
-                        <div className="w-1 h-1 bg-slate-600 rounded-full"></div>
-                        <span>Terms</span>
-                        <div className="w-1 h-1 bg-slate-600 rounded-full"></div>
-                        <span>Privacy</span>
-                    </div>
-                </div> */}
+               
             </div>
 
             <style jsx>{`
