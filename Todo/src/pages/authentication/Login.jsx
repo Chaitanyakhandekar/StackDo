@@ -6,13 +6,14 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { client, account } from '../../appwrite/config';
 import Swal from 'sweetalert2';
-import { Code, Terminal, Lock, Mail, ArrowRight, Github, Zap } from 'lucide-react';
+import { Code, Terminal, Lock, Mail, ArrowRight, Github, Zap, Eye, EyeOff } from 'lucide-react';
 
 function Login() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [emailFocused, setEmailFocused] = useState(false);
     const [passwordFocused, setPasswordFocused] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
     const dispatch = useDispatch();
     const userData = useSelector((state) => state.userData);
     const [loading, setLoading] = useState(false);
@@ -174,9 +175,9 @@ function Login() {
                             </label>
                             <div className="relative">
                                 <input
-                                    type="password"
+                                    type={showPassword ? "text" : "password"}
                                     placeholder="••••••••••••"
-                                    className={`w-full h-12 px-4 bg-slate-900/50 border-2 rounded-xl text-white placeholder-slate-500 transition-all duration-300 focus:outline-none ${
+                                    className={`w-full h-12 px-4 pr-12 bg-slate-900/50 border-2 rounded-xl text-white placeholder-slate-500 transition-all duration-300 focus:outline-none ${
                                         passwordFocused || password 
                                             ? 'border-purple-500 shadow-lg shadow-purple-500/20' 
                                             : 'border-slate-600 hover:border-slate-500'
@@ -186,6 +187,19 @@ function Login() {
                                     onFocus={() => setPasswordFocused(true)}
                                     onBlur={() => setPasswordFocused(false)}
                                 />
+                                {/* Password toggle button */}
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-purple-400 transition-colors duration-200 focus:outline-none"
+                                    title={showPassword ? "Hide password" : "Show password"}
+                                >
+                                    {showPassword ? (
+                                        <EyeOff className="w-5 h-5" />
+                                    ) : (
+                                        <Eye className="w-5 h-5" />
+                                    )}
+                                </button>
                                 <div className={`absolute inset-0 rounded-xl bg-gradient-to-r from-purple-600/20 to-blue-600/20 -z-10 transition-opacity duration-300 ${
                                     passwordFocused || password ? 'opacity-100' : 'opacity-0'
                                 }`}></div>
