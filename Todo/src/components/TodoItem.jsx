@@ -15,9 +15,9 @@ function TodoItem({ title = "Hello", status = false, getDescription = "No descri
     const handleUpdate = async (id) => {
         try {
             await databases.updateDocument(
-                '67efd6330013881c7e66', // database ID
-                '67efd64b00020a82b9d1', // collection ID
-                id,                     // document ID
+                '67efd6330013881c7e66',
+                '67efd64b00020a82b9d1',
+                id,
                 {
                     title: title1,
                     isComplete
@@ -295,9 +295,9 @@ function TodoItem({ title = "Hello", status = false, getDescription = "No descri
                                 <div className="rounded-xl bg-gradient-to-br from-slate-900/80 via-indigo-950/60 to-purple-950/40 border-2 border-indigo-400/20 backdrop-blur-xl shadow-2xl shadow-indigo-500/10">
                                     {editDescription ? (
                                         <div className="p-4">
-                                            <p className="text-sm text-transparent bg-gradient-to-r from-slate-200 via-indigo-200 to-purple-200 bg-clip-text font-mono leading-relaxed">
+                                            <pre className="text-sm text-transparent bg-gradient-to-r from-slate-200 via-indigo-200 to-purple-200 bg-clip-text font-mono leading-relaxed whitespace-pre-wrap break-words">
                                                 {description}
-                                            </p>
+                                            </pre>
                                         </div>
                                     ) : (
                                         <div className="p-4">
