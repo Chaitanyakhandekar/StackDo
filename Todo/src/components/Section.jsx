@@ -16,6 +16,7 @@ function Section({ id, name, activeSection, setActiveSection, setTodos, setActiv
                 '67efd64b00020a82b9d1',
                 [Query.equal('sectionId', id)]
             )
+            console.log('Fetched Todos for section:', name, response.documents)
             setTodos(response.documents)
         } catch (error) {
             console.error(error)

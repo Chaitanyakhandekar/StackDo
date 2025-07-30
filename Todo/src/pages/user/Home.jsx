@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { FiLogOut, FiEdit, FiTrash2, FiPlus, FiX, FiCode, FiLayers, FiCommand, FiZap, FiCpu } from 'react-icons/fi';
+import { FiLogOut, FiEdit, FiTrash2, FiPlus, FiX, FiCode, FiLayers, FiCommand, FiZap, FiCpu, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import TodoItem from "../../components/TodoItem";
 import { useNavigate } from "react-router";
 import { Client, Account, Databases, ID } from 'appwrite';
@@ -30,6 +30,7 @@ function Home() {
     const [userId1, setUserId1] = useState("")
     const [authVerified, setAuthVerified] = useState(false);
     const [sectionDeleted,setSectionDeleted] = useState(false)
+    const [scrollPosition, setScrollPosition] = useState(0)
 
     useEffect(() => {
         const verifyAuth = async () => {
@@ -68,6 +69,7 @@ function Home() {
                 '67efd64b00020a82b9d1',
                queries
             );
+            console.log('all todos', response.documents)
             setTodos(response.documents);
         } catch (error) {
             console.error("Fetch error:", error);
@@ -83,7 +85,6 @@ function Home() {
                 '67efd64b00020a82b9d1',
                 [Query.equal('sectionId', activeSectionId)]
             )
-            console.log('todos', response)
             setTodos(response.documents)
         } catch (error) {
 
@@ -223,6 +224,17 @@ function Home() {
         }
     }
 
+    // Scroll handlers for module navigation
+    const scrollModules = (direction) => {
+        const container = document.getElementById('modules-container');
+        const scrollAmount = 200;
+        if (direction === 'left') {
+            container.scrollLeft -= scrollAmount;
+        } else {
+            container.scrollLeft += scrollAmount;
+        }
+    };
+
     if (!authVerified) {
         return (
             <div className="w-full min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 flex flex-col items-center justify-center relative overflow-hidden">
@@ -339,54 +351,108 @@ function Home() {
                     <div className="flex items-center space-x-3 mb-2">
                         <FiLayers className="w-6 h-6 text-indigo-400" />
                         <h2 className="text-xl font-bold text-gray-200">Project Modules</h2>
+                        {sections.length > 0 && (
+                            <div className="px-3 py-1 rounded-full bg-indigo-500/20 border border-indigo-500/30">
+                                <span className="text-sm font-mono text-indigo-300">
+                                    {sections.length + 1} modules
+                                </span>
+                            </div>
+                        )}
                     </div>
                     <p className="text-gray-400 text-sm font-mono">Organize your development tasks by modules and features</p>
                 </div>
 
-                {/* Sections */}
+                {/* Enhanced Modules Section with Fixed Height and Scroll */}
                 <div className="mb-8">
-                    <div className="flex flex-wrap gap-3 p-4 rounded-2xl backdrop-blur-xl bg-white/5 border border-white/10">
-                        <button
-                            className={`group relative px-6 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center space-x-2 ${
-                                activeSection === 'All' 
-                                ? "bg-gradient-to-r from-purple-500 to-indigo-600 shadow-lg shadow-purple-500/25" 
-                                : "bg-white/10 hover:bg-white/20 border border-white/20"
-                            }`}
-                            onClick={() => {setActiveSection('All'), fetchAllTodos(userId1)}}
-                        >
-                            <FiCpu className="w-4 h-4" />
-                            <span>All Modules</span>
-                            {activeSection === 'All' && (
-                                <div className="absolute -inset-1 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-xl blur opacity-30"></div>
-                            )}
-                        </button>
+                    <div className="relative rounded-2xl backdrop-blur-xl bg-white/5 border border-white/10 overflow-hidden">
+                        {/* Module Navigation Header */}
+                        <div className="flex items-center justify-between p-4 border-b border-white/10 bg-gradient-to-r from-white/5 to-transparent">
+                            <div className="flex items-center space-x-3">
+                                <FiCpu className="w-5 h-5 text-indigo-400" />
+                                <h3 className="text-lg font-bold text-gray-200">Active Modules</h3>
+                            </div>
+                            
+                            {/* Scroll indicators */}
+                            <div className="flex items-center space-x-2">
+                                <button
+                                    onClick={() => scrollModules('left')}
+                                    className="p-2 rounded-lg bg-white/10 hover:bg-white/20 border border-white/10 hover:border-indigo-400/50 transition-all duration-200 group"
+                                    title="Scroll left"
+                                >
+                                    <FiChevronLeft className="w-4 h-4 text-gray-400 group-hover:text-indigo-400" />
+                                </button>
+                                <button
+                                    onClick={() => scrollModules('right')}
+                                    className="p-2 rounded-lg bg-white/10 hover:bg-white/20 border border-white/10 hover:border-indigo-400/50 transition-all duration-200 group"
+                                    title="Scroll right"
+                                >
+                                    <FiChevronRight className="w-4 h-4 text-gray-400 group-hover:text-indigo-400" />
+                                </button>
+                            </div>
+                        </div>
 
-                        {sections.map((section) => (
-                            <Section
-                                key={section.$id}
-                                id={section.$id}
-                                name={section.name}
-                                activeSection={activeSection}
-                                setActiveSection={setActiveSection}
-                                setTodos={setTodos}
-                                setActiveSectionId={setActiveSectionId}
-                                activeSectionId={activeSectionId}
-                                loading={loading}
-                                setLoading={setLoading}
-                                fetchAllTodos={fetchAllTodos}
-                                setSectionDeleted={setSectionDeleted}
-                                setSections={setSections}
-                            />
-                        ))}
+                        {/* Scrollable Modules Container */}
+                        <div className="relative">
+                            {/* Gradient overlays for scroll indication */}
+                            <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-slate-900/80 to-transparent z-10 pointer-events-none"></div>
+                            <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-slate-900/80 to-transparent z-10 pointer-events-none"></div>
+                            
+                            <div 
+                                id="modules-container"
+                                className="flex gap-3 p-4 overflow-x-auto scrollbar-hide scroll-smooth"
+                                style={{
+                                    scrollbarWidth: 'none',
+                                    msOverflowStyle: 'none',
+                                    WebkitScrollbar: { display: 'none' }
+                                }}
+                            >
+                                {/* All Modules Button */}
+                                <button
+                                    className={`group relative flex-shrink-0 px-6 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center space-x-2 whitespace-nowrap ${
+                                        activeSection === 'All' 
+                                        ? "bg-gradient-to-r from-purple-500 to-indigo-600 shadow-lg shadow-purple-500/25" 
+                                        : "bg-white/10 hover:bg-white/20 border border-white/20 hover:border-indigo-400/50"
+                                    }`}
+                                    onClick={() => {setActiveSection('All'), fetchAllTodos(userId1)}}
+                                >
+                                    <FiCpu className="w-4 h-4" />
+                                    <span>All Modules</span>
+                                    {activeSection === 'All' && (
+                                        <div className="absolute -inset-1 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-xl blur opacity-30"></div>
+                                    )}
+                                </button>
 
-                        <button
-                            className="group relative px-6 py-3 rounded-xl font-semibold transition-all duration-200 border-2 border-dashed border-white/30 hover:border-indigo-400 hover:bg-indigo-500/10 flex items-center space-x-2"
-                            onClick={() => setAddSection(true)}
-                            title="Create new module"
-                        >
-                            <FiPlus className="w-4 h-4" />
-                            <span className="hidden sm:inline">New Module</span>
-                        </button>
+                                {/* Dynamic Sections */}
+                                {sections.map((section) => (
+                                    <div key={section.$id} className="flex-shrink-0">
+                                        <Section
+                                            id={section.$id}
+                                            name={section.name}
+                                            activeSection={activeSection}
+                                            setActiveSection={setActiveSection}
+                                            setTodos={setTodos}
+                                            setActiveSectionId={setActiveSectionId}
+                                            activeSectionId={activeSectionId}
+                                            loading={loading}
+                                            setLoading={setLoading}
+                                            fetchAllTodos={fetchAllTodos}
+                                            setSectionDeleted={setSectionDeleted}
+                                            setSections={setSections}
+                                        />
+                                    </div>
+                                ))}
+
+                                {/* Add New Module Button */}
+                                <button
+                                    className="group relative flex-shrink-0 px-6 py-3 rounded-xl font-semibold transition-all duration-200 border-2 border-dashed border-white/30 hover:border-indigo-400 hover:bg-indigo-500/10 flex items-center space-x-2 whitespace-nowrap"
+                                    onClick={() => setAddSection(true)}
+                                    title="Create new module"
+                                >
+                                    <FiPlus className="w-4 h-4" />
+                                    <span>New Module</span>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -499,6 +565,7 @@ function Home() {
                                         <TodoItem
                                             key={todo.$id}
                                             title={todo.title}
+                                            getDescription={todo.description || "No description"}
                                             status={todo.isComplete}
                                             sectionId={todo.sectionId}
                                             id={todo.$id}
@@ -521,6 +588,16 @@ function Home() {
                     </div>
                 </div>
             </div>
+
+            <style jsx>{`
+                .scrollbar-hide {
+                    -ms-overflow-style: none;
+                    scrollbar-width: none;
+                }
+                .scrollbar-hide::-webkit-scrollbar {
+                    display: none;
+                }
+            `}</style>
         </div>
     )
 }
