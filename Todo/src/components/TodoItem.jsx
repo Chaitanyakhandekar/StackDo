@@ -1,16 +1,20 @@
 import React, { useState, useEffect } from "react";
-import { FiEdit, FiTrash2, FiCheck, FiSave, FiCode, FiX, FiCircle, FiCheckCircle, FiChevronDown, FiChevronRight, FiFileText, FiTerminal, FiGitBranch, FiClock, FiZap, FiEdit2, FiEdit3 } from 'react-icons/fi';
+import { FiEdit, FiTrash2, FiCheck, FiSave, FiCode, FiX, FiCircle, FiCheckCircle, FiChevronDown, FiChevronRight, FiFileText, FiTerminal, FiGitBranch, FiClock, FiZap, FiEdit2, FiEdit3, FiDollarSign } from 'react-icons/fi';
 import { client, account, databases } from '../appwrite/config';
 
-function TodoItem({ title = "Hello", status = false, getDescription = "No description", key, sectionId, id, fetchSectionTodos }) {
+function TodoItemAmount({ title = "Hello", status = false, getDescription = "No description", price = 0, key, sectionId, id, fetchSectionTodos , type1="text" }) {
     const [title1, setTitle1] = useState(title)
     const [isComplete, setIsComplete] = useState(status)
     const [editTitle, setEditTitle] = useState(true)
     const [editDescription, setEditDescription] = useState(true)
+    const [editPrice, setEditPrice] = useState(true)
     const [isHovered, setIsHovered] = useState(false)
     const [showDescription, setShowDescription] = useState(false)
     const [description, setDescription] = useState(getDescription)
     const [tempDescription, setTempDescription] = useState(description)
+    const [taskPrice, setTaskPrice] = useState(price)
+    const [tempPrice, setTempPrice] = useState(price)
+    const [type, setType] = useState(type1===null ? "text" : type1)
 
     const handleUpdate = async (id) => {
         try {
@@ -20,7 +24,8 @@ function TodoItem({ title = "Hello", status = false, getDescription = "No descri
                 id,
                 {
                     title: title1,
-                    isComplete
+                    isComplete,
+                    price: taskPrice
                 }
             );
         } catch (error) {
@@ -43,7 +48,7 @@ function TodoItem({ title = "Hello", status = false, getDescription = "No descri
 
     useEffect(() => {
         handleUpdate(id)
-    }, [title1, isComplete])
+    }, [title1, isComplete, taskPrice])
 
     // Generate priority and time estimate (mock data for demo)
     const priority = Math.random() > 0.7 ? 'high' : Math.random() > 0.4 ? 'medium' : 'low';
@@ -90,6 +95,26 @@ function TodoItem({ title = "Hello", status = false, getDescription = "No descri
         
         setTempDescription(description);
         setEditDescription(true);
+    };
+
+    const handlePriceSave = () => {
+        setTaskPrice(tempPrice);
+        setEditPrice(true);
+        // Price is automatically saved via useEffect
+    };
+
+    const handlePriceCancel = () => {
+        setTempPrice(taskPrice);
+        setEditPrice(true);
+    };
+
+    const formatPrice = (price) => {
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'INR',
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 2
+        }).format(price || 0);
     };
 
     return (
@@ -159,16 +184,54 @@ function TodoItem({ title = "Hello", status = false, getDescription = "No descri
                                             }`} />
                                             <div className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse"></div>
                                         </div>
-                                        <p className={`font-mono text-sm transition-all duration-200 flex-1 min-w-0 ${
+                                        <p className={`font-mono text-lg transition-all duration-200 flex-1 min-w-0 ${
                                             isComplete 
                                                 ? "line-through text-green-300/70" 
-                                                : "text-transparent bg-gradient-to-r from-cyan-200 via-indigo-200 to-purple-200 bg-clip-text font-medium"
+                                                : "text-transparent bg-gradient-to-r from-cyan-200 via-indigo-200 to-purple-200 bg-clip-text font-bold"
                                         }`}>
                                             {title1}
                                         </p>
                                     </div>
                                 )}
                             </div>
+
+                            {/* Price Display */}
+                            {type === "amount" && <div className="flex items-center space-x-3">
+                                {!editPrice ? (
+                                    <div className="flex items-center space-x-2 bg-gradient-to-r from-emerald-900/60 to-green-900/40 backdrop-blur-xl rounded-xl px-4 py-2 border-2 border-emerald-400/50 focus-within:border-emerald-300 focus-within:ring-2 focus-within:ring-emerald-400/30 focus-within:shadow-lg focus-within:shadow-emerald-500/20 transition-all duration-300">
+                                        <span className="w-4 h-4 text-emerald-400 flex-shrink-0 animate-pulse" >₹</span>
+                                        <input
+                                            type="number"
+                                            step="0.01"
+                                            min="0"
+                                            className="bg-transparent text-emerald-100 font-mono text-sm focus:outline-none w-20 placeholder-emerald-300/50"
+                                            value={tempPrice}
+                                            onChange={(e) => setTempPrice(parseFloat(e.target.value) || 0)}
+                                            autoFocus
+                                            placeholder="0.00"
+                                        />
+                                    </div>
+                                ) : (
+                                    <div className={`flex items-center space-x-2 px-3 py-2 rounded-xl transition-all duration-200  ${
+                                        taskPrice > 0 
+                                            ? "bg-gradient-to-r from-emerald-500/20 to-green-500/20 border border-emerald-500/40 text-emerald-300 shadow-lg shadow-emerald-500/20" 
+                                            : "bg-gradient-to-r from-slate-700/40 to-gray-700/30 border border-gray-500/30 text-gray-400"
+                                    } backdrop-blur-xl`}>
+                                        <span className={`w-4 h-full flex-shrink-0 ${
+                                            taskPrice > 0 ? "text-emerald-400" : "text-gray-500"
+                                        }`}>₹</span>
+                                        <span className={`font-mono text-sm font-semibold h-full ${
+                                            isComplete && taskPrice > 0
+                                                ? "line-through text-emerald-300/70"
+                                                : taskPrice > 0 
+                                                    ? "text-emerald-200" 
+                                                    : "text-gray-400"
+                                        }`}>
+                                            {taskPrice}
+                                        </span>
+                                    </div>
+                                )}
+                            </div>}
                         </div>
 
                         {/* Task metadata */}
@@ -202,8 +265,38 @@ function TodoItem({ title = "Hello", status = false, getDescription = "No descri
 
                             {/* Action Buttons */}
                             <div className={`flex items-center space-x-2 transition-all duration-200 ${
-                                isHovered || !editTitle ? "opacity-100 translate-x-0" : "opacity-60 translate-x-2"
+                                isHovered || !editTitle || !editPrice ? "opacity-100 translate-x-0" : "opacity-60 translate-x-2"
                             }`}>
+                                {/* Price Edit Controls */}
+                                {type==="amount" && !isComplete && (
+                                    <button
+                                        onClick={() => setEditPrice(false)}
+                                        className="px-3 py-1 rounded-lg bg-gradient-to-r from-emerald-500/20 to-green-500/20 border border-emerald-500/40 text-emerald-300 hover:shadow-lg hover:shadow-emerald-500/30 hover:scale-110 transition-all duration-200 group/edit-price backdrop-blur-xl"
+                                        title="Edit task price"
+                                    >
+                                        <span className="w-4 h-4 group-hover/edit-price:rotate-12 transition-transform duration-200">₹</span>
+                                    </button>
+                                )}
+                                
+                                {!editPrice && (
+                                    <>
+                                        <button
+                                            onClick={handlePriceSave}
+                                            className="p-2 rounded-lg bg-gradient-to-r from-emerald-500/20 to-green-500/20 border border-emerald-500/40 text-emerald-300 hover:shadow-lg hover:shadow-emerald-500/30 hover:scale-110 transition-all duration-200 group/save-price backdrop-blur-xl"
+                                            title="Save price changes"
+                                        >
+                                            <FiSave className="w-4 h-4 group-hover/save-price:scale-110 transition-transform duration-200" />
+                                        </button>
+                                        <button
+                                            onClick={handlePriceCancel}
+                                            className="p-2 rounded-lg bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/40 text-amber-300 hover:shadow-lg hover:shadow-amber-500/30 hover:scale-110 transition-all duration-200 group/cancel-price backdrop-blur-xl"
+                                            title="Cancel price editing"
+                                        >
+                                            <FiX className="w-4 h-4 group-hover/cancel-price:rotate-90 transition-transform duration-200" />
+                                        </button>
+                                    </>
+                                )}
+
                                 {/* Title Edit Controls */}
                                 {editTitle && !isComplete && (
                                     <button
@@ -247,7 +340,7 @@ function TodoItem({ title = "Hello", status = false, getDescription = "No descri
                 </div>
 
                 {/* Description Dropdown */}
-                {showDescription && (
+                {type==="text" &&  showDescription && (
                     <div className="mt-4 pt-4 border-t border-indigo-400/20">
                         <div className="flex items-start space-x-4">
                             <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-r from-purple-500/30 to-indigo-500/30 rounded-lg border-2 border-purple-400/40 flex items-center justify-center backdrop-blur-xl shadow-lg shadow-purple-500/20">
@@ -337,4 +430,4 @@ function TodoItem({ title = "Hello", status = false, getDescription = "No descri
     )
 }
 
-export default TodoItem;
+export default TodoItemAmount;

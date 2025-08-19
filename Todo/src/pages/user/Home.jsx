@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { FiLogOut, FiEdit, FiTrash2, FiPlus, FiX, FiCode, FiLayers, FiCommand, FiZap, FiCpu, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
+import { FiLogOut, FiEdit, FiTrash2, FiPlus, FiX, FiCode, FiLayers, FiCommand, FiZap, FiCpu, FiChevronLeft, FiChevronRight, FiDollarSign, FiType, FiFileText } from 'react-icons/fi';
 import TodoItem from "../../components/TodoItem";
 import { useNavigate } from "react-router";
 import { Client, Account, Databases, ID } from 'appwrite';
@@ -19,13 +19,16 @@ function Home() {
     const [b4, setB4] = useState(false)
     const [addSection, setAddSection] = useState(false)
     const [sectionName, setSectionName] = useState("")
+    const [sectionType, setSectionType] = useState("text") // New state for section type
     const [activeSection, setActiveSection] = useState('All')
     const [activeSectionId, setActiveSectionId] = useState('All')
+    const [activeSectionType, setActiveSectionType] = useState('text') // Track active section type
     const [todos, setTodos] = useState([])
     const [backupTodos, setBackupTodos] = useState([])
     const [sectionTodods, setSectionTodos] = useState([])
     const [sections, setSections] = useState([])
     const [title, setTitle] = useState("")
+    const [itemPrice, setItemPrice] = useState("") // New state for item price
     const [loading, setLoading] = useState(false)
     const [userId1, setUserId1] = useState("")
     const [authVerified, setAuthVerified] = useState(false);
@@ -198,31 +201,58 @@ function Home() {
             ID.unique(),
             {
                 name: sectionName,
+                type: sectionType, // Include section type
                 userId: userData.userId
             }
         )
         console.log(response)
         fetchSections(userData.userId).then()
         setAddSection(false)
+        setSectionName("")
+        setSectionType("text")
     }
 
     async function addTodo() {
+
+        if (!title || title?.trim() === "") {
+            console.error("Title is required");
+            return;
+        }
+        if (sectionType==='amount' && (!itemPrice || isNaN(itemPrice))) {
+            console.error("Valid item price is required");
+            return;
+        }
+
+        console.log("Item Price ----------------- ", itemPrice)
+
         let response = await databases.createDocument(
             '67efd6330013881c7e66',
             '67efd64b00020a82b9d1',
             ID.unique(),
             {
                 title,
+                price: sectionType === 'amount' ? parseFloat(itemPrice) || 0 : 0, // Include price for amount sections
                 sectionId: activeSection === 'All' ? "All" : activeSectionId,
                 userId: userData.userId,
-                isComplete: false
+                isComplete: false,
+                type: sectionType
             }
         )
         if (response) {
+            console.log(response)
             fetchSectionTodos()
             setTitle("")
+            setItemPrice("")
         }
     }
+
+    // Calculate total for amount sections
+    const calculateSectionTotal = () => {
+        if (activeSectionType !== 'amount') return 0;
+        return todos
+            .filter(todo => todo.userId === userId1 && !todo.isComplete)
+            .reduce((sum, todo) => sum + (parseFloat(todo.price) || 0), 0);
+    };
 
     // Scroll handlers for module navigation
     const scrollModules = (direction) => {
@@ -347,7 +377,7 @@ function Home() {
 
             <div className="relative z-10 max-w-7xl mx-auto p-6">
                 {/* Header Section */}
-                <div className="mb-8">
+                {/* <div className="mb-8">
                     <div className="flex items-center space-x-3 mb-2">
                         <FiLayers className="w-6 h-6 text-indigo-400" />
                         <h2 className="text-xl font-bold text-gray-200">Project Modules</h2>
@@ -360,16 +390,27 @@ function Home() {
                         )}
                     </div>
                     <p className="text-gray-400 text-sm font-mono">Organize your development tasks by modules and features</p>
-                </div>
+                </div> */}
 
                 {/* Enhanced Modules Section with Fixed Height and Scroll */}
                 <div className="mb-8">
                     <div className="relative rounded-2xl backdrop-blur-xl bg-white/5 border border-white/10 overflow-hidden">
                         {/* Module Navigation Header */}
                         <div className="flex items-center justify-between p-4 border-b border-white/10 bg-gradient-to-r from-white/5 to-transparent">
-                            <div className="flex items-center space-x-3">
+                            <div className="flex items-center pr-5 sm:pr-0 space-x-3">
                                 <FiCpu className="w-5 h-5 text-indigo-400" />
-                                <h3 className="text-lg font-bold text-gray-200">Active Modules</h3>
+                                <h3 className="text-md sm:text-lg font-bold text-gray-200">Active Modules</h3>
+                                {/* Show section type and total for amount sections */}
+                                {activeSection !== 'All' && activeSectionType === 'amount' && (
+                                    <div className="flex items-center space-x-2">
+                                        <div className="px-3 py-1 rounded-full bg-green-500/20 border border-green-500/30 flex items-center space-x-2">
+                                            <span className="w-3 h-3 text-green-400"></span>
+                                            <span className="text-md font-mono text-green-300">
+                                                Total: ₹{calculateSectionTotal().toFixed(2)}
+                                            </span>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                             
                             {/* Scroll indicators */}
@@ -413,7 +454,11 @@ function Home() {
                                         ? "bg-gradient-to-r from-purple-500 to-indigo-600 shadow-lg shadow-purple-500/25" 
                                         : "bg-white/10 hover:bg-white/20 border border-white/20 hover:border-indigo-400/50"
                                     }`}
-                                    onClick={() => {setActiveSection('All'), fetchAllTodos(userId1)}}
+                                    onClick={() => {
+                                        setActiveSection('All');
+                                        setActiveSectionType('text');
+                                        fetchAllTodos(userId1);
+                                    }}
                                 >
                                     <FiCpu className="w-4 h-4" />
                                     <span>All Modules</span>
@@ -428,10 +473,12 @@ function Home() {
                                         <Section
                                             id={section.$id}
                                             name={section.name}
+                                            type={section.type || 'text'} // Pass section type
                                             activeSection={activeSection}
                                             setActiveSection={setActiveSection}
                                             setTodos={setTodos}
                                             setActiveSectionId={setActiveSectionId}
+                                            setActiveSectionType={setActiveSectionType} // Pass setter
                                             activeSectionId={activeSectionId}
                                             loading={loading}
                                             setLoading={setLoading}
@@ -461,81 +508,75 @@ function Home() {
                     <div className="flex items-center space-x-3 mb-4">
                         <FiZap className="w-5 h-5 text-yellow-400" />
                         <h3 className="text-lg font-bold text-gray-200">Quick Add</h3>
+                        {activeSectionType === 'amount' && activeSection !== 'All' && (
+                            <div className="px-3 py-0 rounded-full bg-green-500/20 border border-green-500/30 flex items-center space-x-2">
+                                <span className="w-3 h-full text-green-400">₹</span>
+                                <span className="text-sm font-mono text-green-300">Amount Mode</span>
+                            </div>
+                        )}
                     </div>
                     
-                    <div className="flex flex-col sm:flex-row gap-4 p-6 rounded-2xl backdrop-blur-xl bg-gradient-to-r from-white/5 to-white/10 border border-white/10">
-                        <div className="flex-1 relative">
-                            <input
-                                type="text"
-                                placeholder="What needs to be built today?"
-                                className="w-full p-4 rounded-xl bg-black/30 border border-white/20 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/20 transition-all duration-200 font-mono text-white placeholder-gray-400"
-                                value={title}
-                                onChange={(e) => setTitle(e.target.value)}
-                            />
-                            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-purple-500/10 to-indigo-500/10 opacity-0 focus-within:opacity-100 transition-opacity duration-200 pointer-events-none"></div>
-                        </div>
+                    <div className="flex flex-col gap-4 p-6 rounded-2xl backdrop-blur-xl bg-gradient-to-r from-white/5 to-white/10 border border-white/10">
+                        {/* Input fields based on section type */}
+                        {activeSectionType === 'amount' && activeSection !== 'All' ? (
+                            // Amount section: dual input fields
+                            <div className="flex flex-col sm:flex-row gap-4">
+                                <div className="flex-1 relative">
+                                    <div className="flex items-center space-x-2 mb-2">
+                                        <FiFileText className="w-4 h-4 text-indigo-400" />
+                                        <label className="text-sm font-mono text-gray-300">Item Name</label>
+                                    </div>
+                                    <input
+                                        type="text"
+                                        placeholder="e.g., Coffee, Groceries, Equipment..."
+                                        className="w-full p-4 rounded-xl bg-black/30 border border-white/20 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/20 transition-all duration-200 font-mono text-white placeholder-gray-400"
+                                        value={title}
+                                        onChange={(e) => setTitle(e.target.value)}
+                                    />
+                                </div>
+                                <div className="sm:w-48 relative">
+                                    <div className="flex items-center space-x-2 mb-2">
+                                        <span className="w-4 h-4 text-green-400">₹</span>
+                                        <label className="text-sm font-mono text-gray-300">Price</label>
+                                    </div>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        placeholder="0.00"
+                                        className="w-full p-4 rounded-xl bg-black/30 border border-green-400/20 focus:border-green-400 focus:outline-none focus:ring-2 focus:ring-green-400/20 transition-all duration-200 font-mono text-white placeholder-gray-400"
+                                        value={itemPrice}
+                                        onChange={(e) => setItemPrice(e.target.value)}
+                                    />
+                                </div>
+                            </div>
+                        ) : (
+                            // Text section: single input field
+                            <div className="flex-1 relative">
+                                <input
+                                    type="text"
+                                    placeholder="What needs to be built today?"
+                                    className="w-full p-4 rounded-xl bg-black/30 border border-white/20 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/20 transition-all duration-200 font-mono text-white placeholder-gray-400"
+                                    value={title}
+                                    onChange={(e) => setTitle(e.target.value)}
+                                />
+                                <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-purple-500/10 to-indigo-500/10 opacity-0 focus-within:opacity-100 transition-opacity duration-200 pointer-events-none"></div>
+                            </div>
+                        )}
 
                         <button
-                            className="group relative px-8 py-4 bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl font-bold transition-all duration-200 hover:shadow-lg hover:shadow-green-500/25 hover:scale-105 flex items-center justify-center space-x-2"
+                            className="group relative px-8 py-4 bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl font-bold transition-all duration-200 hover:shadow-lg hover:shadow-green-500/25 hover:scale-105 flex items-center justify-center space-x-2 sm:w-auto sm:self-end"
                             onClick={addTodo}
                         >
                             <FiPlus className="w-5 h-5" />
-                            <span>Deploy Task</span>
+                            <span>{activeSectionType === 'amount' && activeSection !== 'All' ? 'Add Item' : 'Deploy Task'}</span>
                             <div className="absolute inset-0 bg-gradient-to-r from-green-600 to-emerald-700 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
                         </button>
                     </div>
                 </div>
-            </div>
 
-            {/* Add Section Modal */}
-            {addSection && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setAddSection(false)}></div>
-                    
-                    <div className="relative w-full max-w-md p-8 rounded-3xl backdrop-blur-xl bg-gradient-to-br from-white/10 to-white/5 border border-white/20 shadow-2xl">
-                        <button
-                            className="absolute top-4 right-4 p-2 rounded-full hover:bg-white/10 transition-colors duration-200"
-                            onClick={() => setAddSection(false)}
-                        >
-                            <FiX className="w-5 h-5" />
-                        </button>
-
-                        <div className="flex items-center space-x-3 mb-6">
-                            <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-xl flex items-center justify-center">
-                                <FiLayers className="w-5 h-5 text-white" />
-                            </div>
-                            <h3 className="text-xl font-bold">Create Module</h3>
-                        </div>
-
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-semibold text-gray-300 mb-2">
-                                    Module Name
-                                </label>
-                                <input
-                                    type="text"
-                                    placeholder="e.g., Authentication, API, Frontend"
-                                    value={sectionName}
-                                    onChange={(e) => setSectionName(e.target.value)}
-                                    className="w-full p-4 rounded-xl bg-black/30 border border-white/20 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/20 transition-all duration-200 font-mono"
-                                />
-                            </div>
-
-                            <button
-                                className="w-full py-4 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-xl font-bold hover:shadow-lg hover:shadow-purple-500/25 transition-all duration-200"
-                                onClick={createSection}
-                            >
-                                Initialize Module
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Todo List */}
-            <div className="relative z-10 max-w-7xl mx-auto px-6 pb-8">
-                <div className="rounded-2xl backdrop-blur-xl bg-white/5 border border-white/10 overflow-hidden">
-                    <div className="p-6 border-b border-white/10">
+                <div className="relative z-10 max-w-7xl mx-auto  pb-8">
+                <div className="rounded-2xl backdrop-blur-xl bg-white/5 border border-white/10 overflow-hidden w-full">
+                    <div className="p-6 border-2 border-white/10">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-3">
                                 <h3 className="text-lg font-bold">
@@ -569,6 +610,7 @@ function Home() {
                                             status={todo.isComplete}
                                             sectionId={todo.sectionId}
                                             id={todo.$id}
+                                            type1={todo.type}
                                             fetchSectionTodos={fetchSectionTodos}
                                         />
                                     )
@@ -588,18 +630,70 @@ function Home() {
                     </div>
                 </div>
             </div>
+            </div>
 
-            <style jsx>{`
-                .scrollbar-hide {
-                    -ms-overflow-style: none;
-                    scrollbar-width: none;
-                }
-                .scrollbar-hide::-webkit-scrollbar {
-                    display: none;
-                }
-            `}</style>
+            {/* Add Section Modal */}
+            {addSection && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setAddSection(false)}></div>
+                    
+                    <div className="relative w-full max-w-md p-8 rounded-3xl backdrop-blur-xl bg-gradient-to-br from-white/10 to-white/5 border border-white/20 shadow-2xl">
+                        <button
+                            className="absolute top-4 right-4 p-2 rounded-full hover:bg-white/10 transition-colors duration-200"
+                            onClick={() => setAddSection(false)}
+                        >
+                            <FiX className="w-5 h-5" />
+                        </button>
+
+                        <div className="flex items-center space-x-3 mb-6">
+                            <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-xl flex items-center justify-center">
+                                <FiLayers className="w-5 h-5 text-white" />
+                            </div>
+                            <h3 className="text-xl font-bold">Create Module</h3>
+                        </div>
+
+                        <div className="space-y-6">
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-300 mb-2">
+                                    Module Name
+                                </label>
+                                <input
+                                    type="text"
+                                    placeholder="e.g., Authentication, API, Frontend"
+                                    value={sectionName}
+                                    onChange={(e) => setSectionName(e.target.value)}
+                                    className="w-full p-4 rounded-xl bg-black/30 border border-white/20 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/20 transition-all duration-200 font-mono text-white placeholder-gray-400"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-300 mb-2">
+                                    Module Type
+                                </label>
+                                <select
+                                    value={sectionType}
+                                    onChange={(e) => setSectionType(e.target.value)}
+                                    className="w-full p-4 rounded-xl bg-black/30 border border-white/20 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/20 transition-all duration-200 font-mono text-white"
+                                >
+                                    <option value="text">Text</option>
+                                    <option value="amount">Amount</option>
+                                </select>
+                            </div>
+
+                            <button
+                                onClick={createSection}
+                                className="group relative w-full px-6 py-4 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl font-bold transition-all duration-200 hover:shadow-lg hover:shadow-indigo-500/25 hover:scale-105 flex items-center justify-center space-x-2"
+                            >
+                                <FiPlus className="w-5 h-5" />
+                                <span>Create Module</span>
+                                <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 to-purple-700 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
-    )
+    );
 }
 
 export default Home;
